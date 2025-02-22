@@ -91,7 +91,7 @@ $objPHPPresentation->getLayout()->setDocumentLayout(DocumentLayout::LAYOUT_CUSTO
 	->setCY(890,  DocumentLayout::UNIT_PIXEL);
 
 // Set properties
-$objPHPPresentation->getDocumentProperties()->setCreator('SuccessfulchannelsAPP')->setLastModifiedBy('Successfulchannels Team');
+$objPHPPresentation->getDocumentProperties()->setCreator('It Web tool')->setLastModifiedBy('It web Tool Team');
 
 $scorecard_counter = 1;
 $tbl_counter = 1;
@@ -117,14 +117,12 @@ $table_header_arr = array();
 $actionplan_x_axis_val = 25;
 
 $max_lines_limit = 40;
-$row_count_limit  = 35;
-$slideUse = 0;
+
 $headingOffsetY1 = 0;
 $setting['header_title'] = strtoupper($app_title['title']);
 
 $tableCount = count_array($fieldHeading['fieldHeadingTitle']);
 $tableCounter = 0;
-$row_count = 0;
 $total_max_lines  = 0;
 if ($new_cam_slide == true) {
 	$max_lines_limit = 40;
@@ -135,52 +133,40 @@ if ($new_cam_slide == true) {
 	$actionplan_x_axis = $actionplan_x_axis_val;
 	$table_side = 'odd';
 	$old_max_lines = 0;
-	$row_count_limit  = 35;
-	$slideUse = 0;
 }
 
-$max_total_template = 2;
+$max_total_template = 3;
 $table_width = 1800;
 $table_size = 'full';
 /******************* intial Varibales  ********************************/
 
 
 /******************* PPT Code start here ****************************/
+$headingOffsetY2 = 0;
 
 foreach ($fieldHeading['fieldHeadingTitle'] as $tableId => $column) {
 
 	$countCustomColumn = count_array($fieldHeading['fieldHeadingTitle'][$tableId]);
 	$columnWidth = table_column_width($fieldLen[$tableId], $module_key);
-
-	if ($headingOffsetY > 650) {
-		$headingOffsetY1 = $headingOffsetY;
-	} else if ($headingOffsetY > 150 && $headingOffsetY <= 300 && count_array($FieldArr['fieldData'][$tableId]) < 5) {
-		$headingOffsetY1 = $headingOffsetY1;
-	} else if ($headingOffsetY > 80) {
-		$headingOffsetY1 = 40;
-	}
-	$headingOffsetY1 = $headingOffsetY1 * 1.2;
-	if ($headingOffsetY1 >= 680) {
+	if ($total_max_lines > 30 || $headingOffsetY1 +$headingOffsetY >= 735) {
 		$total_max_lines = 0;
-		$row_count = 0;
 		$total_template = 0;
 		$max_lines_limit = 40;
-		$headingOffsetY = 100;
-		$tableHeight = 0;
+		$headingOffsetY = 80;
 		$headingOffsetY1 = 0;
 		$slide_counter++;
 		$setting['slide_counter']  = $slide_counter;
 		$currentSlide = createTemplatedSlide($objPHPPresentation, $setting);
-		$actionplan_x_axis = $actionplan_x_axis_val;
 		$table_side = 'odd';
 		$old_max_lines = 0;
-		$row_count_limit  = 35;
-		$slideUse = 0;
+		$headingOffsetY2 = 20;
 		// break;
 	}
 
+
 	if ($countCustomColumn > 0) {
 		for ($total_template = 1; $total_template < $max_total_template; $total_template++) {
+			
 			$shape0 = $currentSlide->createRichTextShape()
 				->setWidth(1800)->setOffsetX($actionplan_x_axis)->setOffsetY($headingOffsetY + $headingOffsetY1);
 			$textRun = $shape0->createTextRun($tableNameArr[$tableId])->getFont()->setBold(true)->setSize(18)->setColor($oColor_border->setRGB(color_2));
@@ -191,10 +177,9 @@ foreach ($fieldHeading['fieldHeadingTitle'] as $tableId => $column) {
 			$total_max_lines += $row_max_lines;
 			$headingOffsetY1 += $row_max_lines * 16;
 
-
 			$shape1 = $currentSlide->createTableShape($countCustomColumn);
 			$shape1->setOffsetX($actionplan_x_axis);
-			$shape1->setOffsetY($headingOffsetY + $headingOffsetY1);
+			$shape1->setOffsetY($headingOffsetY + $headingOffsetY1+$headingOffsetY2);
 
 			/******************* Header Row Start ********************************/
 
@@ -232,32 +217,24 @@ foreach ($fieldHeading['fieldHeadingTitle'] as $tableId => $column) {
 				if (inArray($pId, $partnerArr[$tableId])) {
 					continue;
 				}
-
+			
 				$row_max_lines = table_max_lines($columnWidth['str_length'], $partnerDataArr);
 				$total_max_lines += $row_max_lines;
-				$row_count++;
+				$headingOffsetY = 70 + (($total_max_lines + 1) * 15);
 
-				$headingOffsetY = 135 + ($total_max_lines * 18);
+				$headingOffsetY1 += ($row_max_lines +1 * 18);
 
-				$headingOffsetY1 += ($row_max_lines + 1 * 18);
-				$slideUse++;
-
-				if ($total_max_lines > $max_lines_limit || $headingOffsetY1 >= 780) {
+				if ($total_max_lines > $max_lines_limit || $headingOffsetY1 >= 735) {
 					$total_max_lines = 0;
-					$row_count = 0;
 					$total_template = 0;
 					$max_lines_limit = 40;
 					$headingOffsetY = 80;
-					$tableHeight = 0;
 					$headingOffsetY1 = 0;
 					$slide_counter++;
 					$setting['slide_counter']  = $slide_counter;
 					$currentSlide = createTemplatedSlide($objPHPPresentation, $setting);
-					$actionplan_x_axis = $actionplan_x_axis_val;
 					$table_side = 'odd';
 					$old_max_lines = 0;
-					$row_count_limit  = 35;
-					$slideUse = 0;
 					break;
 				}
 
@@ -289,26 +266,23 @@ foreach ($fieldHeading['fieldHeadingTitle'] as $tableId => $column) {
 					$header1 = $oCell->createTextRun(displayHtmlSafe($fieldVal));
 					$header1->getFont()->setSize(TD_FONTSIZE)->setItalic(FONT_ITALIC);
 				}
-
+				     
 				/******************* Table Body Row End ********************************/
 			}
-
-			$actionplan_x_axis  =  $actionplan_x_axis_val;
+			if($tableDataCount == $i){
+				break;
+			  }
 			$table_side = 'odd';
 		}
 	}
-	$total_max_lines += $total_max_lines * .75;
-
 	$tableCounter++;
-
+	// $headingOffsetY2 = ($headingOffsetY1 +80) ;
 	if ($tableCount == $tableCounter) {
 		break;
 	}
 }
-
 /******************* PPT Code End here ****************************/
-
-
+// die;
 // create slide template	
 function createTemplatedSlide(PhpOffice\PhpPresentation\PhpPresentation $objPHPPresentation, $setting)
 {
@@ -323,8 +297,6 @@ function createTemplatedSlide(PhpOffice\PhpPresentation\PhpPresentation $objPHPP
 		$header_line = abs_path . "/resources/ppt/header-line.png";
 		$header_logo = abs_path . "/resources/logo.png";
 
-		// echo $left_divider; die;
-
 		if (file_exists($left_divider)) {
 			$oBkgImage = new Image();
 			$oBkgImage->setPath($left_divider);
@@ -335,8 +307,8 @@ function createTemplatedSlide(PhpOffice\PhpPresentation\PhpPresentation $objPHPP
 			$shape->setPath($header_line)
 				->setWidth(1850)
 				->setOffsetX(10)
-				->setOffsetY(65)
-				->setResizeProportional(false);
+				->setOffsetY(65);
+			// ->setResizeProportional(false);
 		}
 
 		if (file_exists($header_logo)) {
@@ -345,8 +317,9 @@ function createTemplatedSlide(PhpOffice\PhpPresentation\PhpPresentation $objPHPP
 				->setHeight(50)
 				->setWidth(200)
 				->setOffsetX(30)
-				->setOffsetY(10)
-				->setResizeProportional(false);
+				->setOffsetY(10);
+
+			// ->setResizeProportional(false);
 		}
 
 
